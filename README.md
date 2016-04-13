@@ -1,4 +1,4 @@
-Functionalities : user login logout
+Functionalities : user login logout<br>
 user can change its profile info.
 restful apis for login, logout, auth_status, edit_profile, get_user_profile.
 APIs:
