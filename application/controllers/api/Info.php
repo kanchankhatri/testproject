@@ -43,7 +43,7 @@ class Info extends REST_Controller {
         }
     }
 
-    public function users_post()
+    public function user_post()
     {
         // if(!isset($_SESSION['userid'])){
         //     $this->response([
