@@ -26,8 +26,10 @@ class Auth extends CI_Controller {
 			$validate = $this->user->validate_user_credentials($_POST);
 			if($validate){
 				if($validate[0]->status=='active'){
-					//set session								
-					$this->session_login($validate[0]);
+					//set session					
+					$this->load->helper('session');
+					session_login($validate[0]);
+					// $this->session_login($validate[0]);
 					header('Location: '.base_url('/profile'));
 				}
 			}
@@ -36,14 +38,9 @@ class Auth extends CI_Controller {
 			$this->load->view('main',$data);
 		}
 	}
-	function session_login($data){
-		$user['userid']=$data->userid;
-		$user['email']=$data->email;	
-		$this->session->set_userdata($user);		
-	}
+	
 	public function logout()
-	{   		
-		$this->load->library('session');					
+	{		
 		$this->session->sess_destroy();		
 		if(!empty($_SERVER['HTTP_REFERER']))
 			header('Location: '.$_SERVER['HTTP_REFERER']);

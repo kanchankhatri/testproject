@@ -5,17 +5,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 // This can be removed if you use __autoload() in config.php OR use Modular Extensions
 require APPPATH . '/libraries/REST_Controller.php';
 
-/**
- * This is an example of a few basic user interaction methods you could use
- * all done with a hardcoded array
- *
- * @package         CodeIgniter
- * @subpackage      Rest Server
- * @category        Controller
- * @author          Phil Sturgeon, Chris Kacerguis
- * @license         MIT
- * @link            https://github.com/chriskacerguis/codeigniter-restserver
- */
 class Info extends REST_Controller {
 
     function __construct()
@@ -99,25 +88,92 @@ class Info extends REST_Controller {
             }       
         }
     }    
-
-    public function users_delete()
-    {
-        $id = (int) $this->get('id');
-
-        // Validate the id.
-        if ($id <= 0)
-        {
-            // Set the response and exit
-            $this->response(NULL, REST_Controller::HTTP_BAD_REQUEST); // BAD_REQUEST (400) being the HTTP response code
+    function login_post(){
+        if(isset($_SESSION['userid'])){
+            $this->response([
+                    'status' => FALSE,
+                    'message' => 'User already logged in',
+                    'userid' => $_SESSION['userid']
+                    ], 400);
         }
-
-        // $this->some_model->delete_something($id);
-        $message = [
-        'id' => $id,
-        'message' => 'Deleted the resource'
-        ];
-
-        $this->set_response($message, REST_Controller::HTTP_NO_CONTENT); // NO_CONTENT (204) being the HTTP response code
+        $required_keys = array('email','password');        
+        foreach ($required_keys as $key) {
+            if(empty($_POST[$key])){
+                $this->response([
+                    'status' => FALSE,
+                    'message' => 'Missing Params'
+                    ], 400);    
+            }
+        }
+        $user_validate = $this->user->get(array('where'=>array('email'=>$_POST['email'],
+            'password'=>md5($_POST['password']))));
+        if(!empty($_POST)) {
+            try {
+                $this->load->helper('session');
+                if($user_validate){
+                    session_login($user_validate[0]);
+                    $this->response([
+                        'status' => true,
+                        'message' => 'User Logged In',
+                        'userid' => $user_validate[0]->userid
+                        ], REST_Controller::HTTP_OK);
+                } else {
+                    $this->response([
+                        'status' => false,
+                        'message' => 'Email Or Password Incorrect',                        
+                        ], REST_Controller::HTTP_BAD_REQUEST);               
+                }                
+            } catch(Exception $e){
+                $result['status']=false;
+                $result['message']=$e->getMessage();
+                $this->response(json_encode($result), REST_Controller::HTTP_BAD_REQUEST); // BAD_REQUEST (400) being the HTTP response code                
+            }
+        }
     }
-
+    function logout_get() {
+        $required_keys = array('userid');
+        foreach ($required_keys as $key) {
+            if(empty($_GET[$key])){
+                $this->response([
+                    'status' => FALSE,
+                    'message' => 'Missing userid'
+                    ], 400);    
+            }
+        }
+        if($_SESSION['userid']==$_GET['userid']){
+            $this->session->sess_destroy();
+            $this->response([
+                'status' => true,
+                'message' => 'User Logout'
+                ], REST_Controller::HTTP_OK);
+        } else {
+            $this->response([
+                'status' => FALSE,
+                'message' => 'Current Session is for different user'
+                ], 400);
+        }        
+        
+    }
+    function auth_status_get() {
+        $required_keys = array('userid');
+        foreach ($required_keys as $key) {
+            if(empty($_GET[$key])){
+                $this->response([
+                    'status' => FALSE,
+                    'message' => 'Missing userid'
+                    ], 400);    
+            }
+        }
+        if($_SESSION['userid']==$_GET['userid']){            
+            $this->response([
+                'status' => true,
+                'message' => 'User is Logged In'
+                ], REST_Controller::HTTP_OK);
+        } else {
+            $this->response([
+                    'status' => true,
+                'message' => 'User is not Logged In'
+                ], REST_Controller::HTTP_OK);
+        }                
+    }
 }
