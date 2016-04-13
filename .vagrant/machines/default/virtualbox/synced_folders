@@ -1,0 +1,1 @@
+{"virtualbox":{"/var/www/html/testproject":{"guestpath":"/var/www/html/testproject","hostpath":"/Users/kanchan/Documents/workspace/testproject","disabled":false,"__vagrantfile":true},"/vagrant":{"guestpath":"/vagrant","hostpath":"/Users/kanchan/Documents/workspace/testproject","disabled":false,"__vagrantfile":true}}}
